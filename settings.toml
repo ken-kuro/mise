@@ -55,6 +55,12 @@ env = "MISE_ALWAYS_KEEP_INSTALL"
 type = "Bool"
 description = "should mise keep install files after installation even if the installation fails"
 
+[aqua.baked_registry]
+env = "MISE_AQUA_BAKED_REGISTRY"
+type = "Bool"
+default = true
+description = "Use baked-in aqua registry (if compiled in)."
+
 [aqua.cosign]
 env = "MISE_AQUA_COSIGN"
 type = "Bool"
@@ -260,18 +266,18 @@ installing plugins, e.g.: `mise plugin install node https://github.com/asdf-vm/a
 
 [disable_hints]
 env = "MISE_DISABLE_HINTS"
-type = "ListString"
+type = "SetString"
 rust_type = "BTreeSet<String>"
 default = []
-parse_env = "list_by_comma"
+parse_env = "set_by_comma"
 description = "Turns off helpful hints when using different mise features"
 
 [disable_tools]
 env = "MISE_DISABLE_TOOLS"
-type = "ListString"
+type = "SetString"
 rust_type = "BTreeSet<String>"
 default = []
-parse_env = "list_by_comma"
+parse_env = "set_by_comma"
 description = "Tools defined in mise.toml that should be ignored"
 
 [dotnet.package_flags]
@@ -304,10 +310,10 @@ However, you can set this to a different URL if you have a custom feed or want t
 
 [enable_tools]
 env = "MISE_ENABLE_TOOLS"
-type = "ListString"
+type = "SetString"
 rust_type = "BTreeSet<String>"
 default = []
-parse_env = "list_by_comma"
+parse_env = "set_by_comma"
 description = "Tools defined in mise.toml that should be used - all other tools are ignored"
 
 [env]
@@ -457,6 +463,12 @@ env = "MISE_GO_SKIP_CHECKSUM"
 type = "Bool"
 description = "Set to true to skip checksum verification when downloading go sdk tarballs."
 
+[gpg_verify]
+env = "MISE_GPG_VERIFY"
+type = "Bool"
+optional = true
+description = "Use gpg to verify all tool signatures."
+
 [http_timeout]
 env = "MISE_HTTP_TIMEOUT"
 type = "Duration"
@@ -480,18 +492,18 @@ Set to "false" to disable idiomatic version file parsing.
 
 [idiomatic_version_file_disable_tools]
 env = "MISE_IDIOMATIC_VERSION_FILE_DISABLE_TOOLS"
-type = "ListString"
+type = "SetString"
 rust_type = "BTreeSet<String>"
 default = []
-parse_env = "list_by_comma"
+parse_env = "set_by_comma"
 deprecated = "This has been replaced with the idiomatic_version_file_enable_tools setting."
 description = "Specific tools to disable idiomatic version files for."
 
 [idiomatic_version_file_enable_tools]
 env = "MISE_IDIOMATIC_VERSION_FILE_ENABLE_TOOLS"
-type = "ListString"
+type = "SetString"
 rust_type = "Option<BTreeSet<String>>"
-parse_env = "list_by_comma"
+parse_env = "set_by_comma"
 description = "Specific tools to enable idiomatic version files for like .node-version, .ruby-version, etc."
 
 [ignored_config_paths]
@@ -519,10 +531,10 @@ hide = true
 
 [legacy_version_file_disable_tools]
 env = "MISE_LEGACY_VERSION_FILE_DISABLE_TOOLS"
-type = "ListString"
+type = "SetString"
 rust_type = "BTreeSet<String>"
 default = []
-parse_env = "list_by_comma"
+parse_env = "set_by_comma"
 deprecated = "Use idiomatic_version_file_disable_tools instead."
 description = "Specific tools to disable idiomatic version files for."
 hide = true
@@ -1121,10 +1133,10 @@ description = "Automatically install missing tools when executing tasks."
 
 [task_skip]
 env = "MISE_TASK_SKIP"
-type = "ListString"
+type = "SetString"
 rust_type = "BTreeSet<String>"
 default = []
-parse_env = "list_by_comma"
+parse_env = "set_by_comma"
 description = "Tasks to skip when running `mise run`."
 
 [task_timings]

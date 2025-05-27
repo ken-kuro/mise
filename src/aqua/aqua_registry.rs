@@ -11,10 +11,15 @@ use indexmap::IndexSet;
 use itertools::Itertools;
 use regex::Regex;
 use serde_derive::Deserialize;
-use std::cmp::PartialEq;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::LazyLock as Lazy;
+use std::sync::LazyLock;
+use std::{
+    cmp::PartialEq,
+    sync::atomic::{AtomicBool, Ordering},
+};
+use tokio::sync::Mutex;
 use url::Url;
 
 #[allow(clippy::invisible_characters)]
@@ -196,29 +201,17 @@ impl AquaRegistry {
         Ok(Self { path, repo_exists })
     }
 
-    pub fn package(&self, id: &str) -> Result<AquaPackage> {
+    pub async fn package(&self, id: &str) -> Result<AquaPackage> {
+        static CACHE: LazyLock<Mutex<HashMap<String, AquaPackage>>> =
+            LazyLock::new(|| Mutex::new(HashMap::new()));
+        if let Some(pkg) = CACHE.lock().await.get(id) {
+            return Ok(pkg.clone());
+        }
         let path_id = id.split('/').join(std::path::MAIN_SEPARATOR_STR);
         let path = self.path.join("pkgs").join(&path_id).join("registry.yaml");
-        let registry: RegistryYaml = if !self.repo_exists {
-            if let Some(registry) = AQUA_STANDARD_REGISTRY_FILES.get(id) {
-                trace!("reading baked-in aqua-registry for {id}");
-                serde_yaml::from_str(registry)?
-            } else if !path.exists() || file::modified_duration(&path)? > DAILY {
-                trace!("downloading aqua-registry for {id} to {path:?}");
-                let url: Url =
-                    format!("https://mise-versions.jdx.dev/aqua-registry/{path_id}/registry.yaml")
-                        .parse()?;
-                http::HTTP_FETCH.download_file(url, &path, None)?;
-                serde_yaml::from_reader(file::open(&path)?)?
-            } else {
-                trace!("reading cached aqua-registry for {id} from {path:?}");
-                serde_yaml::from_reader(file::open(&path)?)?
-            }
-        } else {
-            trace!("reading aqua-registry for {id} from repo at {path:?}");
-            serde_yaml::from_reader(file::open(&path)?)?
-        };
-        let mut pkg = registry
+        let mut pkg = self
+            .fetch_package_yaml(id, &path, &path_id)
+            .await?
             .packages
             .into_iter()
             .next()
@@ -226,11 +219,51 @@ impl AquaRegistry {
         if let Some(version_filter) = &pkg.version_filter {
             pkg.version_filter_expr = Some(expr::compile(version_filter)?);
         }
+        CACHE.lock().await.insert(id.to_string(), pkg.clone());
         Ok(pkg)
     }
 
-    pub fn package_with_version(&self, id: &str, v: &str) -> Result<AquaPackage> {
-        Ok(self.package(id)?.with_version(v))
+    pub async fn package_with_version(&self, id: &str, v: &str) -> Result<AquaPackage> {
+        Ok(self.package(id).await?.with_version(v))
+    }
+
+    async fn fetch_package_yaml(
+        &self,
+        id: &str,
+        path: &PathBuf,
+        path_id: &str,
+    ) -> Result<RegistryYaml> {
+        let registry = if self.repo_exists {
+            trace!("reading aqua-registry for {id} from repo at {path:?}");
+            serde_yaml::from_reader(file::open(path)?)?
+        } else if SETTINGS.aqua.baked_registry && AQUA_STANDARD_REGISTRY_FILES.contains_key(id) {
+            trace!("reading baked-in aqua-registry for {id}");
+            serde_yaml::from_str(AQUA_STANDARD_REGISTRY_FILES.get(id).unwrap())?
+        } else if !path.exists() || file::modified_duration(path)? > DAILY {
+            static RATE_LIMITED: AtomicBool = AtomicBool::new(false);
+            if RATE_LIMITED.load(Ordering::Relaxed) {
+                warn!("aqua-registry rate limited, skipping {id}");
+                return Err(eyre!("aqua-registry rate limited"));
+            }
+            trace!("downloading aqua-registry for {id} to {path:?}");
+            let url =
+                format!("https://mise-versions.jdx.dev/aqua-registry/{path_id}/registry.yaml");
+            let url: Url = url.parse()?;
+            match http::HTTP_FETCH.download_file(url, path, None).await {
+                Ok(_) => {}
+                Err(e) if http::error_code(&e) == Some(429) => {
+                    warn!("aqua-registry rate limited, skipping {id}");
+                    RATE_LIMITED.store(true, Ordering::Relaxed);
+                    return Err(e);
+                }
+                Err(e) => return Err(e),
+            }
+            serde_yaml::from_reader(file::open(path)?)?
+        } else {
+            trace!("reading cached aqua-registry for {id} from {path:?}");
+            serde_yaml::from_reader(file::open(path)?)?
+        };
+        Ok(registry)
     }
 }
 
@@ -282,6 +315,26 @@ impl AquaPackage {
             .unwrap_or(self)
     }
 
+    fn detect_format(&self, asset_name: &str) -> &'static str {
+        let formats = [
+            "tar.br", "tar.bz2", "tar.gz", "tar.lz4", "tar.sz", "tar.xz", "tbr", "tbz", "tbz2",
+            "tgz", "tlz4", "tsz", "txz", "tar.zst", "zip", "gz", "bz2", "lz4", "sz", "xz", "zst",
+            "dmg", "pkg", "rar", "tar",
+        ];
+
+        for format in formats {
+            if asset_name.ends_with(&format!(".{format}")) {
+                return match format {
+                    "tgz" => "tar.gz",
+                    "txz" => "tar.xz",
+                    "tbz2" | "tbz" => "tar.bz2",
+                    _ => format,
+                };
+            }
+        }
+        "raw"
+    }
+
     pub fn format(&self, v: &str) -> Result<&str> {
         if self.r#type == AquaPackageType::GithubArchive {
             return Ok("tar.gz");
@@ -295,26 +348,7 @@ impl AquaPackage {
                 debug!("no asset or url for {}/{}", self.repo_owner, self.repo_name);
                 "".to_string()
             };
-            if asset.ends_with(".tar.gz") || asset.ends_with(".tgz") {
-                "tar.gz"
-            } else if asset.ends_with(".tar.xz") || asset.ends_with(".txz") {
-                "tar.xz"
-            } else if asset.ends_with(".tar.bz2")
-                || asset.ends_with(".tbz2")
-                || asset.ends_with(".tbz")
-            {
-                "tar.bz2"
-            } else if asset.ends_with(".gz") {
-                "gz"
-            } else if asset.ends_with(".xz") {
-                "xz"
-            } else if asset.ends_with(".bz2") {
-                "bz2"
-            } else if asset.ends_with(".zip") {
-                "zip"
-            } else {
-                "raw"
-            }
+            self.detect_format(&asset)
         } else {
             match self.format.as_str() {
                 "tgz" => "tar.gz",
@@ -345,7 +379,7 @@ impl AquaPackage {
         } else if cfg!(windows) {
             let mut ctx = HashMap::default();
             let asset = self.parse_aqua_str(&self.asset, v, &ctx)?;
-            if self.complete_windows_ext {
+            if self.complete_windows_ext && self.format(v)? == "raw" {
                 strs.insert(format!("{asset}.exe"));
             } else {
                 strs.insert(asset);
@@ -355,7 +389,7 @@ impl AquaPackage {
                 ctx.insert("Arch".to_string(), "amd64".to_string());
                 strs.insert(self.parse_aqua_str(&self.asset, v, &ctx)?);
                 let asset = self.parse_aqua_str(&self.asset, v, &ctx)?;
-                if self.complete_windows_ext {
+                if self.complete_windows_ext && self.format(v)? == "raw" {
                     strs.insert(format!("{asset}.exe"));
                 } else {
                     strs.insert(asset);
@@ -367,10 +401,7 @@ impl AquaPackage {
 
     pub fn url(&self, v: &str) -> Result<String> {
         let mut url = self.url.clone();
-        if cfg!(windows)
-            && self.complete_windows_ext
-            && (self.format.is_empty() || self.format == "raw")
-        {
+        if cfg!(windows) && self.complete_windows_ext && self.format(v)? == "raw" {
             url.push_str(".exe");
         }
         self.parse_aqua_str(&url, v, &Default::default())

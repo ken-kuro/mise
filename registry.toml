@@ -582,6 +582,8 @@ dotnet.backends = [
     "vfox:mise-plugins/vfox-dotnet"
 ]
 dotnet-core.backends = ["asdf:mise-plugins/mise-dotnet-core"]
+dotslash.backends = ["ubi:facebook/dotslash"]
+dotslash.test = ["dotslash --version", "DotSlash"]
 dotty.backends = ["asdf:mise-plugins/mise-dotty"]
 dprint.backends = ["aqua:dprint/dprint", "asdf:asdf-community/asdf-dprint"]
 draft.backends = ["aqua:Azure/draft", "asdf:kristoflemmens/asdf-draft"]
@@ -1363,7 +1365,7 @@ mkcert.backends = ["ubi:FiloSottile/mkcert", "asdf:salasrod/asdf-mkcert"]
 mlton.backends = ["asdf:mise-plugins/mise-mlton"]
 mockery.backends = ["aqua:vektra/mockery", "asdf:cabify/asdf-mockery"]
 mockolo.backends = ["ubi:uber/mockolo", "asdf:mise-plugins/mise-mockolo"]
-mockolo.test = ["mockolo --help", "Show help information"]
+# mockolo.test = ["mockolo --help", "Show help information"]
 mold.backends = ["ubi:rui314/mold"]
 monarch.backends = ["asdf:mise-plugins/mise-monarch"]
 mongodb.backends = ["asdf:mise-plugins/mise-mongodb"]
@@ -1846,11 +1848,7 @@ talosctl.backends = [
 ]
 tanka.backends = ["aqua:grafana/tanka", "asdf:trotttrotttrott/asdf-tanka"]
 tanzu.backends = ["asdf:mise-plugins/tanzu-plug-in-for-asdf"]
-taplo.backends = [
-    "aqua:tamasfe/taplo/full",
-    "ubi:tamasfe/taplo[matching=full]",
-    "cargo:taplo-cli"
-]
+taplo.backends = ["aqua:tamasfe/taplo", "ubi:tamasfe/taplo", "cargo:taplo-cli"]
 taplo.test = ["taplo --version", "taplo {{version}}"]
 task.backends = ["ubi:go-task/task", "asdf:particledecay/asdf-task"]
 tctl.backends = ["aqua:temporalio/tctl", "asdf:eko/asdf-tctl"]
@@ -2007,6 +2005,13 @@ velero.backends = ["aqua:vmware-tanzu/velero", "asdf:looztra/asdf-velero"]
 vendir.backends = ["aqua:carvel-dev/vendir", "asdf:vmware-tanzu/asdf-carvel"]
 venom.backends = ["aqua:ovh/venom", "asdf:aabouzaid/asdf-venom"]
 vhs.backends = ["aqua:charmbracelet/vhs", "asdf:chessmango/asdf-vhs"]
+victoria-metrics.backends = [
+    "aqua:victoriametrics/victoriametrics/victoria-metrics"
+]
+victoria-metrics.test = [
+    "victoria-metrics --version | awk -F'-' '{print $6}'",
+    "{{version}}"
+]
 viddy.backends = ["aqua:sachaos/viddy", "asdf:ryodocx/asdf-viddy"]
 vim.backends = ["asdf:mise-plugins/mise-vim"]
 virtualos.backends = ["asdf:mise-plugins/mise-virtualos"]

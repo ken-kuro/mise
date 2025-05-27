@@ -810,6 +810,7 @@ const completionSpec: Fig.Spec = {
                   "float",
                   "bool",
                   "list",
+                  "set",
                 ],
               },
             },
@@ -1814,6 +1815,36 @@ const completionSpec: Fig.Spec = {
       ],
       generateSpec: usageGenerateSpec(["mise tasks --usage"]),
       cache: false,
+    },
+    {
+      name: "search",
+      description: "Search for tools in the registry",
+      options: [
+        {
+          name: ["-i", "--interactive"],
+          description: "Show interactive search",
+          isRepeatable: false,
+        },
+        {
+          name: ["-m", "--match-type"],
+          description: "Match type: equal, contains, or fuzzy",
+          isRepeatable: false,
+          args: {
+            name: "match_type",
+            suggestions: ["equal", "contains", "fuzzy"],
+          },
+        },
+        {
+          name: "--no-header",
+          description: "Don't display headers",
+          isRepeatable: false,
+        },
+      ],
+      args: {
+        name: "name",
+        description: "The tool to search for",
+        isOptional: true,
+      },
     },
     {
       name: "self-update",

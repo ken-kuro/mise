@@ -1,5 +1,116 @@
 # Changelog
 
+## [2025.5.14](https://github.com/jdx/mise/compare/v2025.5.13..v2025.5.14) - 2025-05-26
+
+### 🐛 Bug Fixes
+
+- installing tools with postinstall hooks fails by [@roele](https://github.com/roele) in [#5191](https://github.com/jdx/mise/pull/5191)
+- prefer offline when executing shims by [@jdx](https://github.com/jdx) in [#5195](https://github.com/jdx/mise/pull/5195)
+- multi-line task output is shown in bold by [@roele](https://github.com/roele) in [#5197](https://github.com/jdx/mise/pull/5197)
+
+### ⚡ Performance
+
+- improve tool loading performance in async code by [@jdx](https://github.com/jdx) in [#5198](https://github.com/jdx/mise/pull/5198)
+
+## [2025.5.13](https://github.com/jdx/mise/compare/v2025.5.12..v2025.5.13) - 2025-05-26
+
+### 🐛 Bug Fixes
+
+- output was silenced on task fail with keep-order by [@artemisart](https://github.com/artemisart) in [#5175](https://github.com/jdx/mise/pull/5175)
+- avoid mapfile to run e2e tests on macOS (bash 3.2) by [@artemisart](https://github.com/artemisart) in [#5170](https://github.com/jdx/mise/pull/5170)
+- flaky keep-order e2e test by [@artemisart](https://github.com/artemisart) in [#5178](https://github.com/jdx/mise/pull/5178)
+- watch mise.lock for changes by [@jdx](https://github.com/jdx) in [#5184](https://github.com/jdx/mise/pull/5184)
+- remote task dependency does not work by [@roele](https://github.com/roele) in [#5183](https://github.com/jdx/mise/pull/5183)
+- rayon -> tokio by [@jdx](https://github.com/jdx) in [#5172](https://github.com/jdx/mise/pull/5172)
+- cache results from version host by [@jdx](https://github.com/jdx) in [#5187](https://github.com/jdx/mise/pull/5187)
+- cache results from version host for aqua packages by [@jdx](https://github.com/jdx) in [#5188](https://github.com/jdx/mise/pull/5188)
+
+### 📚 Documentation
+
+- standardize subcommand format to 'u|use' for consistency by [@LuckyWindsck](https://github.com/LuckyWindsck) in [#5167](https://github.com/jdx/mise/pull/5167)
+- clarify how to enable ideomatic version file reading for ruby by [@amkisko](https://github.com/amkisko) in [#5163](https://github.com/jdx/mise/pull/5163)
+
+### 🧪 Testing
+
+- added perf test by [@jdx](https://github.com/jdx) in [#5179](https://github.com/jdx/mise/pull/5179)
+- skip benchmark errors for now by [@jdx](https://github.com/jdx) in [#5186](https://github.com/jdx/mise/pull/5186)
+
+### Chore
+
+- fix clippy issue in xonsh by [@jdx](https://github.com/jdx) in [#5180](https://github.com/jdx/mise/pull/5180)
+- improve shfmt linter by [@jdx](https://github.com/jdx) in [#5181](https://github.com/jdx/mise/pull/5181)
+- cargo up by [@jdx](https://github.com/jdx) in [3ece604](https://github.com/jdx/mise/commit/3ece60479bd8b8e6a00a02b83c0afdd544d95034)
+- fix hyperfine step summary by [@jdx](https://github.com/jdx) in [36ab4a1](https://github.com/jdx/mise/commit/36ab4a12ffed85f07ce918d1a21a6da9f7ebef2c)
+- adjust perf thresholds by [@jdx](https://github.com/jdx) in [4113a3b](https://github.com/jdx/mise/commit/4113a3b82c3fca4eae0dbe7845ec2d513f5b6c8b)
+
+### New Contributors
+
+- @amkisko made their first contribution in [#5163](https://github.com/jdx/mise/pull/5163)
+- @LuckyWindsck made their first contribution in [#5167](https://github.com/jdx/mise/pull/5167)
+
+## [2025.5.12](https://github.com/jdx/mise/compare/v2025.5.11..v2025.5.12) - 2025-05-25
+
+### 🐛 Bug Fixes
+
+- read global/system config file tasks properly by [@jdx](https://github.com/jdx) in [#5169](https://github.com/jdx/mise/pull/5169)
+- typo in time! parallelize_tasks by [@artemisart](https://github.com/artemisart) in [#5171](https://github.com/jdx/mise/pull/5171)
+
+### 🧪 Testing
+
+- disable non-working zig test by [@jdx](https://github.com/jdx) in [2ffb7ea](https://github.com/jdx/mise/commit/2ffb7eaa22e3623363dd153d581bb1a17da78483)
+
+### New Contributors
+
+- @artemisart made their first contribution in [#5171](https://github.com/jdx/mise/pull/5171)
+
+## [2025.5.11](https://github.com/jdx/mise/compare/v2025.5.10..v2025.5.11) - 2025-05-23
+
+### 🚀 Features
+
+- **(registry)** add victoriametrics by [@shikharbhardwaj](https://github.com/shikharbhardwaj) in [#5161](https://github.com/jdx/mise/pull/5161)
+- added dotslash by [@jdx](https://github.com/jdx) in [#5165](https://github.com/jdx/mise/pull/5165)
+
+### 🐛 Bug Fixes
+
+- **(registry)** remove full from taplo by [@risu729](https://github.com/risu729) in [#5160](https://github.com/jdx/mise/pull/5160)
+- mise registry links for ubi with exe selector by [@mnm364](https://github.com/mnm364) in [#5156](https://github.com/jdx/mise/pull/5156)
+- mise settings add idiomatic_version_file_enable_tools stores duplicates in config by [@roele](https://github.com/roele) in [#5162](https://github.com/jdx/mise/pull/5162)
+- infinite sourcing loop on bash-completion by [@ken-kuro](https://github.com/ken-kuro) in [#5150](https://github.com/jdx/mise/pull/5150)
+
+### 🧪 Testing
+
+- disable mockolo since linux does not work anymore by [@jdx](https://github.com/jdx) in [5387d70](https://github.com/jdx/mise/commit/5387d7012d65b3da3dde12cd0a0eb07288b2d8f6)
+
+### New Contributors
+
+- @ken-kuro made their first contribution in [#5150](https://github.com/jdx/mise/pull/5150)
+- @shikharbhardwaj made their first contribution in [#5161](https://github.com/jdx/mise/pull/5161)
+
+## [2025.5.10](https://github.com/jdx/mise/compare/v2025.5.9..v2025.5.10) - 2025-05-22
+
+### 🚀 Features
+
+- **(registry)** add process-compose by [@evanleck](https://github.com/evanleck) in [#4788](https://github.com/jdx/mise/pull/4788)
+- **(registry)** add tailpipe by [@pdecat](https://github.com/pdecat) in [#4858](https://github.com/jdx/mise/pull/4858)
+- mise search by [@roele](https://github.com/roele) in [#5153](https://github.com/jdx/mise/pull/5153)
+
+### 🐛 Bug Fixes
+
+- **(aqua)** windows exe fix by [@jdx](https://github.com/jdx) in [#5154](https://github.com/jdx/mise/pull/5154)
+
+### 🧪 Testing
+
+- disable failing edit test by [@jdx](https://github.com/jdx) in [8698bce](https://github.com/jdx/mise/commit/8698bce774eafa86afa9d5b56a225fa6cdbe6ea1)
+
+### Chore
+
+- disable failing docker dev build by [@jdx](https://github.com/jdx) in [496c1c9](https://github.com/jdx/mise/commit/496c1c91545ed7f013726cd48e746835bdf570d8)
+- temporarily disable cargo up to fix build by [@jdx](https://github.com/jdx) in [90c66b7](https://github.com/jdx/mise/commit/90c66b7b561e81efe7d951a0ce9574c11e7b91a7)
+
+### New Contributors
+
+- @evanleck made their first contribution in [#4788](https://github.com/jdx/mise/pull/4788)
+
 ## [2025.5.9](https://github.com/jdx/mise/compare/v2025.5.8..v2025.5.9) - 2025-05-21
 
 ### 🚀 Features
@@ -24,6 +135,7 @@
 - pin github actions by [@jdx](https://github.com/jdx) in [bf18644](https://github.com/jdx/mise/commit/bf1864472c3ed587fbdb497722849cf6cfacca5c)
 - use renovate to pin github actions by [@jdx](https://github.com/jdx) in [b80d8e3](https://github.com/jdx/mise/commit/b80d8e3ffe73d315c4214f77dedcf4cce7a54032)
 - disable mold in ci by [@jdx](https://github.com/jdx) in [#5128](https://github.com/jdx/mise/pull/5128)
+- fix buildifier test by [@jdx](https://github.com/jdx) in [232a4c6](https://github.com/jdx/mise/commit/232a4c641fedc9dfb83ce048ad5b47253b139854)
 
 ### New Contributors
 
